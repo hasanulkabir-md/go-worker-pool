@@ -13,6 +13,15 @@ Submitter ──► jobs channel ──► [worker 1]
                             ──► [worker 3]
 ```
 
+## Features
+
+- ✅ Reusable worker pool implementation
+- ✅ Configurable number of concurrent workers
+- ✅ Error handling and propagation
+- ✅ Graceful shutdown mechanism
+- ✅ Task-based architecture (implement `Task` interface)
+- ✅ Result collection in any order
+
 ## Project Structure
 
 ```
@@ -38,6 +47,10 @@ go-worker-pool/
 | Graceful shutdown | `Pool.Stop()` closes the jobs channel and waits for workers |
 | Error propagation | `task.Result.Err` carries per-task errors to the collector |
 
+## Requirements
+
+- Go 1.16 or higher
+
 ## Quick Start
 
 ```bash
@@ -46,7 +59,7 @@ cd go-worker-pool
 go run main.go
 ```
 
-Expected output (order may vary):
+Expected output (task order may vary):
 
 ```
 Starting worker pool with 3 workers to process 10 tasks...
@@ -110,6 +123,14 @@ for result := range pool.Results() {
     fmt.Printf("task %d → %v\n", result.TaskID, result.Value)
 }
 ```
+
+## When to Use
+
+This pattern is ideal for:
+- **API scraping** – limit concurrent requests
+- **Data processing** – batch file operations
+- **Background jobs** – handle queued tasks
+- **Resource-constrained systems** – control resource usage
 
 ## License
 
