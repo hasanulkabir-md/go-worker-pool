@@ -31,6 +31,7 @@ type Pool struct {
 	jobs       chan Job
 	results    chan task.Result
 	wg         sync.WaitGroup
+	stopOnce   sync.Once
 }
 
 // NewPool returns a new Pool configured with the given number of workers.
@@ -80,15 +81,18 @@ func (p *Pool) Submit(id int, t task.Task) {
 
 // Stop signals that no more jobs will be submitted, waits for all in-flight
 // jobs to complete, and then closes the results channel so that callers ranging
-// over Results() will exit cleanly.
+// over Results() will exit cleanly.  Stop is safe to call exactly once; calling
+// it more than once is a no-op thanks to the internal sync.Once guard.
 func (p *Pool) Stop() {
-	close(p.jobs)
-	// Wait in a separate goroutine so that the caller can still drain Results()
-	// concurrently without deadlocking on a full results buffer.
-	go func() {
-		p.wg.Wait()
-		close(p.results)
-	}()
+	p.stopOnce.Do(func() {
+		close(p.jobs)
+		// Wait in a separate goroutine so that the caller can still drain
+		// Results() concurrently without deadlocking on a full results buffer.
+		go func() {
+			p.wg.Wait()
+			close(p.results)
+		}()
+	})
 }
 
 // Results returns the read-only channel on which completed results are published.

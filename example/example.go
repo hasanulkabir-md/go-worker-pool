@@ -16,12 +16,19 @@ type divideTask struct {
 	divisor int
 }
 
+// divisionResult carries both divisor and quotient so the collector can display
+// the full expression without indexing back into an external slice.
+type divisionResult struct {
+	divisor  int
+	quotient int
+}
+
 // Process implements task.Task.
 func (d divideTask) Process() (interface{}, error) {
 	if d.divisor == 0 {
 		return nil, errors.New("division by zero")
 	}
-	return 100 / d.divisor, nil
+	return divisionResult{divisor: d.divisor, quotient: 100 / d.divisor}, nil
 }
 
 func main() {
@@ -44,6 +51,7 @@ func main() {
 			log.Printf("  task %d error: %v\n", result.TaskID, result.Err)
 			continue
 		}
-		fmt.Printf("  task %d: 100 / %d = %v\n", result.TaskID, divisors[result.TaskID-1], result.Value)
+		dr := result.Value.(divisionResult)
+		fmt.Printf("  task %d: 100 / %d = %d\n", result.TaskID, dr.divisor, dr.quotient)
 	}
 }

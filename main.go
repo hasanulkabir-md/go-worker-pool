@@ -13,10 +13,16 @@ type squareTask struct {
 	number int
 }
 
+// squareResult carries both the original number and its square so that the
+// collector does not need to re-derive the input from the task ID.
+type squareResult struct {
+	input  int
+	output int
+}
+
 // Process implements task.Task.  It squares the stored number and returns the result.
 func (s squareTask) Process() (interface{}, error) {
-	result := s.number * s.number
-	return result, nil
+	return squareResult{input: s.number, output: s.number * s.number}, nil
 }
 
 func main() {
@@ -45,7 +51,8 @@ func main() {
 			log.Printf("task %d failed: %v\n", result.TaskID, result.Err)
 			continue
 		}
-		fmt.Printf("  task %d: %v² = %v\n", result.TaskID, result.TaskID, result.Value)
+		sr := result.Value.(squareResult)
+		fmt.Printf("  task %d: %d² = %d\n", result.TaskID, sr.input, sr.output)
 	}
 
 	fmt.Println("\nAll tasks completed.")
